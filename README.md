@@ -1,101 +1,247 @@
 # n8n ChatAgent for Unions
 
-**Contributors:** Jason Cox  
-**Tags:** chat, ai, live-chat, customer-support, webhook  
-**Requires at least:** WP 5.0  
-**Tested up to:** WP 6.9  
-**Requires PHP:** 7.4  
-**Stable tag:** 1.0.0  
-**License:** GPLv2 or later — [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
+**AI-powered chat widget for labor organizations running n8n**  
+*A webhook-first WordPress chat interface that keeps data, logic, and compliance in your own automation stack.*
 
 ---
 
-## 🔎 Overview  
+## 📦 Plugin Overview
 
-`n8n ChatAgent for Unions` provides a lightweight, self-hosted chat widget tailored for labor organizations. The plugin injects a floating chat window into any WordPress site and forwards all messages to an `n8n` webhook — no bundled AI service, no external SaaS, and no hidden dependencies. The responses rendered in the chat come solely from your configured `n8n` flows, giving you full control over storage, routing, compliance, and data handling.
-
----
-
-## 📄 Table of Contents  
-- [Features](#features)  
-- [Security & Privacy](#security--privacy)  
-- [Installation](#installation)  
-- [Frequently Asked Questions](#frequently-asked-questions)  
-- [Changelog](#changelog)  
-
----
-
-## ✨ Features  
-
-- **Webhook-first chat**: Every user message is POSTed to your chosen HTTPS webhook; the JSON response is rendered — no external AI service or SaaS required.  
-- **Union-aware metadata**: Logged-in union members send enriched metadata (ID, username, email, roles, local identifier, HMAC-signed session token). Guests send anonymized session data + device/locale info.  
-- **Optional attachment uploads**: Support for PDFs, JPGs, PNGs (base64-encoded), subject to admin-defined limits. Toggle off if you prefer no file transfers.  
-- **Customizable greetings & disclaimers**: Control welcome messages, header copy, disclaimers, and embedded shortcodes/links (e.g. office hours, policy).  
-- **Brandable launcher & bot identity**: Upload your own avatars/icons, adjust widget dimensions, and style using union-specific color palettes.  
-- **Quick action chips & human handoff**: Pre-defined buttons for canned questions, plus a “request human” CTA for live agents when available.  
-- **Persistent transcripts (client-side)**: Chats are stored in browser localStorage so users don’t lose context when navigating pages. Clearing on logout or “New Chat” ensures privacy.  
-- **Full-screen mobile interface**: On phones the widget expands into a safe-area overlay with scroll-locking for smooth usability; on desktop it's a floating launcher with themed header.  
-- **Security-hardened**: AJAX endpoints validate nonces/capabilities, webhook URLs must be HTTPS, attachments are sanitized server-side, and session tokens expire per admin TTL. Zero tracking, zero “pro/enterprise” gating.
+| Field | Value |
+|-----|------|
+| **Contributors** | Jason Cox |
+| **Tags** | chat, ai, live-chat, customer-support, webhook |
+| **Requires WordPress** | 5.0+ |
+| **Tested up to** | 6.9 |
+| **Requires PHP** | 7.4 |
+| **Stable Tag** | 1.0.2 |
+| **License** | GPLv2 or later |
+| **License URI** | https://www.gnu.org/licenses/gpl-2.0.html |
 
 ---
 
-## 🔐 Security & Privacy  
+## 🚦 What This Plugin Is (and Is Not)
 
-- Visitor messages are forwarded to WordPress AJAX endpoint, then proxied to your configured `n8n` webhook. Make sure your webhook validates origin/authenticity and sanitizes or escapes any HTML before sending back responses for display.  
-- The only external call is an optional geolocation check (via `ip-api.com`). If IP-based lookup violates your policy, you may disable it.  
-- The plugin never stores user credentials or chat transcripts on the WordPress server — all data persistence (audit logs, storage, transcripts) is handled fully by your `n8n` workflows or external storage.  
-- REST and AJAX endpoints enforce WordPress nonce and capability checks so anonymous visitors can only access allowed routes.  
-- The front-end JS runs in a sandboxed closure; optional DOM nodes are guarded to avoid runtime errors or injection.  
+**n8n ChatAgent for Unions** is a **UI-only chat widget** for WordPress.
 
----
+- ✅ No bundled AI model  
+- ✅ No SaaS dependency  
+- ✅ No hidden workflows  
+- ✅ No third-party tracking  
 
-## 🛠 Installation  
+Every message is proxied **directly to the n8n webhook you configure**, and **whatever JSON your workflow returns is exactly what the visitor sees**.
 
-1. Upload the folder `n8n-chatagent-for-unions` to `/wp-content/plugins/` (if you’re using a zip archive, compress the plugin folder itself — avoid double-wrapped archives).  
-2. Activate the plugin under **Plugins → Installed Plugins**.  
-3. Go to admin panel **n8n ChatAgent for Unions**, enter your `n8n` webhook URL, and configure optional copy, branding, and settings.  
-4. Load the frontend — the widget auto-attaches to `<body>` and becomes available site-wide.  
+You own:
+- Storage
+- Routing
+- Moderation
+- Compliance
+- Safety enforcement
 
----
-
-## ❓ Frequently Asked Questions  
-
-**Does it work without n8n?**  
-No — the plugin has only been tested with `n8n` webhooks. Other automation platforms may work, but you’re responsible for verifying payload/response formats before using them in production.
-
-**Where are conversations stored?**  
-No data is stored on WordPress. Every message is forwarded to your webhook. If you want transcripts, logging, or CRM storage — build that logic inside your `n8n` workflows.  
-
-**Can I customize the look-and-feel?**  
-Yes — you can modify colors, icons, greetings, disclaimers, widget size, and more via the admin settings. For deeper layout changes, edit `assets/chat-widget.css`.  
-
-**Can visitors upload attachments?**  
-Yes — if **Allow Attachments** is enabled. The widget supports PDFs and common image file types; data is base64-encoded and forwarded. If you prefer no file transfers, simply disable the option.  
-
-**Does it support user authentication context?**  
-Yes — when a union member is logged in, the plugin includes user metadata in the payload (roles, union local ID, HMAC session token, etc.). You determine how that data is handled in your `n8n` workflows.  
-
-**Does chat data persist on shared computers?**  
-By default, transcripts are stored in the visitor’s browser localStorage until logout or “Start New Chat.” If your site is used on shared devices, you may want to clear storage at logout, and disclose this behavior in your privacy policy.  
+All of it lives in **your n8n flows**, not inside WordPress.
 
 ---
 
-## 📝 Changelog  
+## 🧩 Description
+
+This plugin drops a single floating chat window onto any WordPress site and immediately hands conversations off to an **n8n webhook**.
+
+Because it is strictly a frontend shell:
+- There is **no embedded AI brain**
+- There is **no external service**
+- There is **no opinionated workflow**
+
+Defaults (copy, gradients, disclaimers, icons) are tuned for **labor organizations**, but **everything is customizable** from wp-admin.
+
+> **Compatibility note**  
+> This plugin is **only tested with n8n webhooks**. Other automation platforms *may* work, but are unverified. Test thoroughly before production use.
+
+---
+
+## ✨ Features
+
+### 🔗 Webhook-First Architecture
+- Every message is POSTed to your webhook (HTTPS required)
+- Rendered output is exactly what your workflow returns
+- No bundled AI or external processing
+
+### 🪪 Union-Aware Metadata
+- Logged-in users automatically send:
+  - Name
+  - Email
+  - Username
+  - Roles
+  - IAM local identifier
+  - HMAC-signed session token
+- Guests send anonymous session + device/locale metadata
+
+### 📎 Attachment Uploads (Mode-Controlled)
+- Supports **PDF / JPG / PNG**
+- Button visibility modes:
+  - `Never`
+  - `Always`
+  - `Agent-controlled`
+- Trigger uploads dynamically with a workflow keyword  
+  *(default: `[ATTACHMENT_READY]`)*
+
+### 📝 Custom Greetings & Disclaimers
+- Optional welcome webhook call
+- Fully custom greeting text
+- Multi-line disclaimers with HTML + shortcode support
+- Header subtitle supports links and CTAs
+
+### 🎨 Brandable UI
+- Custom launcher & bot avatars
+- IAM color palette control
+- Adjustable widget size
+- Built-in SVG icons or custom images
+
+### 🧭 Quick Actions & Human Handoff
+- Configurable quick-action chips
+- “Request a human” CTA
+- Clean session resets
+
+### 💾 Persistent Transcripts
+- Cached in browser `localStorage`
+- Survives page navigation
+- Clears automatically on logout or “Start New Chat”
+
+### 📱 Full-Screen Mobile Mode
+- Safe-area aware overlay
+- Scroll locking
+- Floating launcher retained on desktop
+
+### 🔐 Security Hardened
+- WordPress nonces + capability checks
+- HTTPS-only webhooks
+- Server-side attachment sanitization
+- Expiring HMAC tokens
+- No tracking, no upsells, no external telemetry
+
+---
+
+## ⚙️ Settings Reference
+
+Access via **wp-admin → n8n ChatAgent for Unions**
+
+### Core Settings
+- **Webhook Endpoint / Timeout**  
+  HTTPS n8n webhook URL + response timeout (default 120s)
+
+- **AI Assistant Name / Default Agent Identifier**  
+  Display name + `agentId` passed to n8n for routing
+
+- **Header Title & Subtitle**  
+  Subtitle supports HTML, shortcodes, and helper links
+
+### Attachments
+- **Attachment Button Mode**  
+  `Never` / `Always` / `Agent-controlled`
+
+- **Prompt Keyword**  
+  Phrase your workflow emits to surface the uploader  
+  *(default: `[ATTACHMENT_READY]`)*
+
+### Security & Identity
+- **Union Token TTL**  
+  HMAC token lifetime in seconds (600 recommended)
+
+### Messaging
+- **Chat Disclaimer Text**  
+  Multi-line footer disclaimer (HTML supported)
+
+- **Greeting Message**  
+  Launcher hover bubble (optional)
+
+- **Custom Welcome Message**  
+  Skip initial webhook call and show static text instead
+
+### Visuals
+- **Bot Icon / Launcher Icon**  
+  Built-in SVGs or custom uploads (~50×50px recommended)
+
+### Optional Metadata
+- **Visitor IP Lookup**  
+  Adds city/country via `ip-api.com` (disable if needed)
+
+---
+
+## 🐞 Bug Fix Highlights
+
+- Fixed attachment visibility + sanitization
+- Prevented optional UI elements from blocking chat open
+- Added resilient transcript caching
+- Resolved double-encoding in admin textareas
+
+---
+
+## 🔍 Security & Privacy Notes
+
+- Messages relay through a WordPress AJAX proxy to your webhook
+- Optional IP lookup uses `http://ip-api.com`
+- No credentials stored in WordPress
+- Transcript persistence is **browser-local only**
+- All endpoints protected by WordPress nonces/cap checks
+- JS guarded against missing DOM nodes
+
+---
+
+## 📥 Installation
+
+1. Upload `n8n-chatagent-for-unions` to `/wp-content/plugins/`
+   > ⚠️ Zip the folder itself — WordPress rejects double-wrapped archives
+2. Activate via **Plugins → Installed Plugins**
+3. Configure via **n8n ChatAgent for Unions** in wp-admin
+4. Load any frontend page — the widget auto-attaches to `<body>`
+
+---
+
+## ❓ Frequently Asked Questions
+
+### Does it work without n8n?
+Only n8n webhooks are officially supported.
+
+### Where are conversations stored?
+Nowhere in WordPress. Store transcripts in your automation stack.
+
+### Can I customize the UI?
+Yes — colors, icons, greetings, and disclaimers are configurable.  
+For deeper changes, edit `assets/chat-widget.css`.
+
+### Are attachments supported?
+Yes. Visibility is controlled by **Attachment Button Mode**. Files are base64-encoded and forwarded to your webhook.
+
+### Does it support authentication?
+Yes. Logged-in WordPress user context is passed to n8n.
+
+### What about shared computers?
+Transcripts persist in `localStorage` until logout or reset.  
+Advise members accordingly and note this in your privacy policy.
+
+---
+
+## 📝 Changelog
+
+### 1.0.2
+- Version bump to flush caches
+- Hardened attachment rendering
+- Removed redundant “Allow Attachments” toggle
+
+### 1.0.1
+- Added attachment visibility modes
+- Configurable attachment trigger keyword
+- Added `agentId` routing support
+- Fixed disclaimer encoding issues
 
 ### 1.0.0
-
-- Added optional attachment uploads (with admin-configurable limits) and visual chips in the chat transcript to indicate file sends.  
-- Enabled shortcode/HTML support in header subtitle; surfaced clickable links styled for union (IAM) usage.  
-- Forward richer metadata to `n8n` (union tokens, device info, optional geolocation, session timing); exposed token TTL controls.  
-- Enforced true full-screen mobile layout with scroll locking so chats fill the viewport on phones.  
-- Removed deprecated “disclaimer secondary text” option; now only a streamlined single disclaimer is shown in footer.  
-- Hardened JS bootstrap — optional DOM nodes are guarded to prevent runtime errors when optional features are disabled.  
-- Added WP-side webhook proxy — avoids CORS issues and keeps webhook URL out of the browser.  
-- Implemented client-side transcript caching (localStorage) so conversations survive page navigation; automatically cleared on logout or manual reset.  
-- Updated readme and security documentation to explicitly state GitHub distribution, n8n-only support, and packaging/install instructions.  
+- Initial release
+- Attachment uploads
+- Rich metadata forwarding
+- Full-screen mobile layout
+- Webhook proxy to avoid CORS
+- Local transcript caching
+- Hardened JS bootstrap
 
 ---
 
-## 📄 License  
-
-This project is licensed under **GPLv2 or later**. See [LICENSE](LICENSE) for full text.  
+**Built for unions. Controlled by you. Powered by n8n.**
