@@ -2,9 +2,9 @@
 Contributors: Jason Cox
 Tags: chat, ai, live-chat, customer-support, webhook
 Requires at least: 5.0
-Tested up to: 6.9
+Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 1.0.14
+Stable tag: 1.0.15
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,14 @@ All other styling (colors, gradients, fonts) lives under the **Colors & Styling*
 3. Visit **n8n ChatAgent for Unions** under the admin menu and enter your n8n webhook URL plus any optional copy/branding tweaks.
 4. Load the frontend— the widget attaches itself to `<body>` automatically.
 
+== GitHub Updates ==
+
+Automatic updates are powered by Plugin Update Checker and use the GitHub repository at https://github.com/jcjason12108-alt/UnionAssist-Chat-n8n-Routing-Layer-.
+
+If the repository is private, add a GitHub token with read access to the repository in wp-config.php:
+
+`define( 'N8N_UNION_CHAT_UPDATE_GITHUB_TOKEN', 'your-github-token' );`
+
 == Frequently Asked Questions ==
 
 = Does it work without n8n? =
@@ -97,6 +105,11 @@ The plugin passes WordPress user context (role, name, email, token) to your webh
 For continuity the widget stores the transcript in the browser’s localStorage until the user logs out or clicks “Start New Chat”. Remind members not to leave sensitive chats open on shared devices, and note this behavior in your privacy policy if needed.
 
 == Changelog ==
+
+= 1.0.15 =
+* Added GitHub update support with Plugin Update Checker.
+* Added optional private repository token support.
+* Updated WordPress compatibility metadata.
 
 = 1.0.14 =
 * Added a desktop resize handle for the chat window.

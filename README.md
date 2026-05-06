@@ -12,9 +12,9 @@
 | **Contributors** | Jason Cox |
 | **Tags** | chat, ai, live-chat, customer-support, webhook |
 | **Requires WordPress** | 5.0+ |
-| **Tested up to** | 6.9 |
+| **Tested up to** | 6.9.4 |
 | **Requires PHP** | 7.4 |
-| **Stable Tag** | 1.0.2 |
+| **Stable Tag** | 1.0.15 |
 | **License** | GPLv2 or later |
 | **License URI** | https://www.gnu.org/licenses/gpl-2.0.html |
 

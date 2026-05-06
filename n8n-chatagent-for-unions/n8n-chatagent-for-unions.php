@@ -2,12 +2,12 @@
 /*
 Plugin Name: n8n ChatAgent for Unions
 Description: Branded AI chat widget for labor unions featuring webhook integrations and multi-agent support.
-Version: 1.0.14
+Version: 1.0.15
 Author: Jason Cox
 Plugin URI: https://github.com/jcjason12108-alt
 Text Domain: n8n-chatagent-for-unions
 Requires at least: 5.0
-Tested up to: 6.9
+Tested up to: 6.9.4
 Requires PHP: 7.4
 License: GPL v2 or later
 */
@@ -15,7 +15,23 @@ License: GPL v2 or later
 if (!defined('ABSPATH')) exit;
 
 // Define constants
-define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.14');
+if (file_exists(__DIR__ . '/plugin-update-checker/plugin-update-checker.php')) {
+    require_once __DIR__ . '/plugin-update-checker/plugin-update-checker.php';
+
+    $n8n_union_chat_update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
+        'https://github.com/jcjason12108-alt/UnionAssist-Chat-n8n-Routing-Layer-/',
+        __FILE__,
+        'n8n-chatagent-for-unions'
+    );
+    $n8n_union_chat_update_checker->setBranch('main');
+
+    $n8n_union_chat_github_token = defined('N8N_UNION_CHAT_UPDATE_GITHUB_TOKEN') ? N8N_UNION_CHAT_UPDATE_GITHUB_TOKEN : getenv('N8N_UNION_CHAT_UPDATE_GITHUB_TOKEN');
+    if (!empty($n8n_union_chat_github_token)) {
+        $n8n_union_chat_update_checker->setAuthentication($n8n_union_chat_github_token);
+    }
+}
+
+define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.15');
 define('N8N_UNION_AI_LIVE_CHAT_DIR', plugin_dir_path(__FILE__));
 define('N8N_UNION_AI_LIVE_CHAT_URL', plugin_dir_url(__FILE__));
 define('N8N_UNION_CHAT_ATTACHMENT_PROMPT_TOKEN', '[ATTACHMENT_READY]');
