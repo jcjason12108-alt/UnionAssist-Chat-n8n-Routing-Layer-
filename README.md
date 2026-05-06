@@ -14,7 +14,7 @@
 | **Requires WordPress** | 5.0+ |
 | **Tested up to** | 6.9.4 |
 | **Requires PHP** | 7.4 |
-| **Stable Tag** | 1.0.15 |
+| **Stable Tag** | 1.0.16 |
 | **License** | GPLv2 or later |
 | **License URI** | https://www.gnu.org/licenses/gpl-2.0.html |
 
@@ -221,6 +221,16 @@ Advise members accordingly and note this in your privacy policy.
 ---
 
 ## 📝 Changelog
+
+### 1.0.16
+- Enabled branch-only GitHub update checks
+- Added generic `PLUGIN_UPDATE_GITHUB_TOKEN` support
+- Updated the plugin URI to the real GitHub repository URL
+
+### 1.0.15
+- Added GitHub update support with Plugin Update Checker
+- Added optional private repository token support
+- Updated WordPress compatibility metadata
 
 ### 1.0.2
 - Version bump to flush caches

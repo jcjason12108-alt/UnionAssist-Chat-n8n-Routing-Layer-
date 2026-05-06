@@ -4,7 +4,7 @@ Tags: chat, ai, live-chat, customer-support, webhook
 Requires at least: 5.0
 Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 1.0.15
+Stable tag: 1.0.16
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,6 +84,8 @@ If the repository is private, add a GitHub token with read access to the reposit
 
 `define( 'N8N_UNION_CHAT_UPDATE_GITHUB_TOKEN', 'your-github-token' );`
 
+The generic `PLUGIN_UPDATE_GITHUB_TOKEN` constant or environment variable is also supported.
+
 == Frequently Asked Questions ==
 
 = Does it work without n8n? =
@@ -105,6 +107,11 @@ The plugin passes WordPress user context (role, name, email, token) to your webh
 For continuity the widget stores the transcript in the browser’s localStorage until the user logs out or clicks “Start New Chat”. Remind members not to leave sensitive chats open on shared devices, and note this behavior in your privacy policy if needed.
 
 == Changelog ==
+
+= 1.0.16 =
+* Enabled branch-only GitHub update checks to avoid release endpoint errors when using direct main branch updates.
+* Added generic `PLUGIN_UPDATE_GITHUB_TOKEN` constant/environment variable support alongside the plugin-specific token.
+* Updated the plugin URI to the real GitHub repository URL.
 
 = 1.0.15 =
 * Added GitHub update support with Plugin Update Checker.
