@@ -12,9 +12,9 @@
 | **Contributors** | Jason Cox |
 | **Tags** | chat, ai, live-chat, customer-support, webhook |
 | **Requires WordPress** | 5.0+ |
-| **Tested up to** | 6.9.4 |
+| **Tested up to** | 7.0 |
 | **Requires PHP** | 7.4 |
-| **Stable Tag** | 1.0.16 |
+| **Stable Tag** | 1.0.17 |
 | **License** | GPLv2 or later |
 | **License URI** | https://www.gnu.org/licenses/gpl-2.0.html |
 
@@ -221,6 +221,12 @@ Advise members accordingly and note this in your privacy policy.
 ---
 
 ## 📝 Changelog
+
+### 1.0.17
+- Reviewed compatibility against the WordPress 7.0 field guide
+- Fixed duplicate debug function declaration during plugin load
+- Hardened proxied webhook AJAX calls with visitor-token validation
+- Bumped asset/plugin versions for compatibility updates
 
 ### 1.0.16
 - Enabled branch-only GitHub update checks

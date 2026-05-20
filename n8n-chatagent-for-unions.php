@@ -2,12 +2,12 @@
 /*
 Plugin Name: n8n ChatAgent for Unions
 Description: Branded AI chat widget for labor unions featuring webhook integrations and multi-agent support.
-Version: 1.0.16
+Version: 1.0.17
 Author: Jason Cox
 Plugin URI: https://github.com/jcjason12108-alt/UnionAssist-Chat-n8n-Routing-Layer-
 Text Domain: n8n-chatagent-for-unions
 Requires at least: 5.0
-Tested up to: 6.9.4
+Tested up to: 7.0
 Requires PHP: 7.4
 License: GPL v2 or later
 */
@@ -44,7 +44,7 @@ if (file_exists(__DIR__ . '/plugin-update-checker/plugin-update-checker.php')) {
     }
 }
 
-define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.16');
+define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.17');
 define('N8N_UNION_AI_LIVE_CHAT_DIR', plugin_dir_path(__FILE__));
 define('N8N_UNION_AI_LIVE_CHAT_URL', plugin_dir_url(__FILE__));
 define('N8N_UNION_CHAT_ATTACHMENT_PROMPT_TOKEN', '[ATTACHMENT_READY]');
@@ -499,7 +499,7 @@ add_action('admin_menu', function() {
     add_menu_page(
         'n8n ChatAgent for Unions',
         'n8n ChatAgent for Unions',
-        'manage_options',
+        n8n_union_chat_manage_capability(),
         'n8n-chatagent-for-unions',
         'n8n_union_chat_settings_page',
         'dashicons-format-chat',
@@ -510,7 +510,7 @@ add_action('admin_menu', function() {
         'n8n-chatagent-for-unions',
         'Settings',
         'Settings',
-        'manage_options',
+        n8n_union_chat_manage_capability(),
         'n8n-chatagent-for-unions',
         'n8n_union_chat_settings_page'
     );
@@ -519,7 +519,7 @@ add_action('admin_menu', function() {
         'n8n-chatagent-for-unions',
         'Colors & Styling',
         'Colors & Styling',
-        'manage_options',
+        n8n_union_chat_manage_capability(),
         'n8n-chatagent-for-unions-colors',
         'n8n_union_chat_colors_page'
     );
@@ -852,7 +852,7 @@ function n8n_union_chat_init_ajax() {
 // Settings page callback
 function n8n_union_chat_settings_page() {
     // Check user capabilities
-    if (!current_user_can('manage_options')) {
+    if (!n8n_union_chat_current_user_can_manage()) {
         wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'n8n-chatagent-for-unions'));
     }
     
@@ -1061,7 +1061,7 @@ function n8n_union_chat_settings_page() {
         
 
         
-        echo '<div class="updated"><p>Settings saved.</p></div>';
+        echo '<div class="updated"><p>' . esc_html__('Settings saved.', 'n8n-chatagent-for-unions') . '</p></div>';
     }
     
 
@@ -1510,6 +1510,17 @@ function n8n_union_chat_proxy_message() {
     $payload = json_decode($payload_raw, true);
     if (!is_array($payload)) {
         wp_send_json_error(['message' => 'Invalid chat payload.']);
+    }
+
+    $visitor_id = '';
+    if (!empty($payload['visitorId'])) {
+        $visitor_id = sanitize_text_field($payload['visitorId']);
+    } elseif (!empty($payload['sessionId'])) {
+        $visitor_id = sanitize_text_field($payload['sessionId']);
+    }
+
+    if ($visitor_id !== '') {
+        n8n_union_chat_require_visitor_token($visitor_id);
     }
 
     if (!isset($payload['chatInput']) && isset($payload['chatinput'])) {
@@ -2606,7 +2617,7 @@ function n8n_union_chat_debug_ip_detection() {
  */
 function n8n_union_get_chat_messages() {
     // Verify nonce - use different nonce for frontend vs admin
-    $nonce_action = current_user_can('manage_options') ? 'n8n_union_chat_get_messages' : 'n8n_union_chat_frontend';
+    $nonce_action = n8n_union_chat_current_user_can_manage() ? 'n8n_union_chat_get_messages' : 'n8n_union_chat_frontend';
     
     if (!isset($_POST['_ajax_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_ajax_nonce'])), $nonce_action)) {
         wp_send_json_error(['message' => 'Security check failed']);
@@ -2620,7 +2631,7 @@ function n8n_union_get_chat_messages() {
     }
     
     // For admin users, check permissions. For visitors, allow access to their own messages
-    if (current_user_can('manage_options')) {
+    if (n8n_union_chat_current_user_can_manage()) {
         // Admin access - can view any visitor's messages
         $visitor_id = sanitize_text_field(wp_unslash($_POST['visitor_id']));
     } else {
@@ -2654,7 +2665,7 @@ function n8n_union_accept_chat_request() {
     }
     
     // Check user permissions
-    if (!current_user_can('manage_options')) {
+    if (!n8n_union_chat_current_user_can_manage()) {
         wp_die('Insufficient permissions');
     }
     
@@ -2752,7 +2763,7 @@ function n8n_union_transfer_to_ai() {
     }
     
     // Check user permissions
-    if (!current_user_can('manage_options')) {
+    if (!n8n_union_chat_current_user_can_manage()) {
         wp_die('Insufficient permissions');
     }
     
@@ -2781,7 +2792,7 @@ function n8n_union_end_chat() {
     }
     
     // Check user permissions
-    if (!current_user_can('manage_options')) {
+    if (!n8n_union_chat_current_user_can_manage()) {
         wp_die('Insufficient permissions');
     }
     
@@ -2798,36 +2809,6 @@ function n8n_union_end_chat() {
     
     // End chat session (implement your logic here)
     wp_send_json_success(['message' => 'Chat ended']);
-}
-
-/**
- * Debug IP detection
- */
-function n8n_union_debug_ip_detection() {
-    // Verify nonce
-    if (!isset($_POST['_ajax_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_ajax_nonce'])), 'n8n_union_chat_debug_ip')) {
-        wp_die('Security check failed');
-    }
-    
-    // Check user permissions
-    if (!current_user_can('manage_options')) {
-        wp_die('Insufficient permissions');
-    }
-    
-    // Get IP detection info
-    $headers = [];
-    foreach ($_SERVER as $key => $value) {
-        if (strpos($key, 'HTTP_') === 0 || in_array($key, ['REMOTE_ADDR', 'SERVER_ADDR'])) {
-            $headers[$key] = sanitize_text_field(wp_unslash($value));
-        }
-    }
-    
-    $detected_ip = sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'] ?? 'Unknown'));
-    
-    wp_send_json_success([
-        'detected_ip' => $detected_ip,
-        'headers' => $headers
-    ]);
 }
 
 // Enqueue styles and scripts for admin pages

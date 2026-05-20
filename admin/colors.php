@@ -1,7 +1,7 @@
 <?php
 // Color customization settings page
 function n8n_union_chat_colors_page() {
-    if (!current_user_can('manage_options')) {
+    if (!n8n_union_chat_current_user_can_manage()) {
         wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'n8n-chatagent-for-unions'));
     }
     
@@ -22,20 +22,20 @@ function n8n_union_chat_colors_page() {
             update_option('n8n_union_header_gradient_end_color', sanitize_hex_color(wp_unslash($_POST['header_gradient_end_color'])));
         }
         if (isset($_POST['chat_width'])) {
-            update_option('n8n_union_chat_width', max(280, absint($_POST['chat_width'])));
+            update_option('n8n_union_chat_width', max(280, absint(wp_unslash($_POST['chat_width']))));
         }
         if (isset($_POST['chat_height_vh'])) {
-            update_option('n8n_union_chat_height_vh', max(30, absint($_POST['chat_height_vh'])));
+            update_option('n8n_union_chat_height_vh', max(30, absint(wp_unslash($_POST['chat_height_vh']))));
         }
         if (isset($_POST['chat_height_max'])) {
-            update_option('n8n_union_chat_height_max', max(400, absint($_POST['chat_height_max'])));
+            update_option('n8n_union_chat_height_max', max(400, absint(wp_unslash($_POST['chat_height_max']))));
         }
         if (isset($_POST['launcher_size'])) {
-            $launcher_size = max(40, min(120, absint($_POST['launcher_size'])));
+            $launcher_size = max(40, min(120, absint(wp_unslash($_POST['launcher_size']))));
             update_option('n8n_union_launcher_size', $launcher_size);
         }
         
-        echo '<div class="notice notice-success"><p>🎨 Settings updated successfully!</p></div>';
+        echo '<div class="notice notice-success"><p>' . esc_html__('Settings updated successfully.', 'n8n-chatagent-for-unions') . '</p></div>';
     }
     
     $button_bg = get_option('n8n_union_button_bg_color', '#C8102E');

@@ -195,6 +195,7 @@
     const formData = new FormData();
     formData.append('action', 'n8n_union_proxy_message');
     formData.append('payload', JSON.stringify(payload));
+    formData.append('visitor_token', visitorToken);
     formData.append('_ajax_nonce', N8nUnionChat.nonce);
     fetch(N8nUnionChat.ajax_url, {
       method: 'POST',
@@ -1022,6 +1023,7 @@
         const formData = new FormData();
         formData.append('action', 'n8n_union_proxy_message');
         formData.append('payload', JSON.stringify(payload));
+        formData.append('visitor_token', visitorToken);
         formData.append('_ajax_nonce', N8nUnionChat.nonce);
         return formData;
       })()
