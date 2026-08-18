@@ -4,7 +4,7 @@ Tags: chat, ai, live-chat, customer-support, webhook
 Requires at least: 5.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.17
+Stable tag: 1.0.18
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,10 @@ The plugin passes WordPress user context (role, name, email, token) to your webh
 For continuity the widget stores the transcript in the browser’s localStorage until the user logs out or clicks “Start New Chat”. Remind members not to leave sensitive chats open on shared devices, and note this behavior in your privacy policy if needed.
 
 == Changelog ==
+
+= 1.0.18 =
+* Updated the bundled Plugin Update Checker library from 5.6 to 5.7.
+* Hardened settings input handling and escaped the starter-question textarea output.
 
 = 1.0.17 =
 * Reviewed compatibility against the WordPress 7.0 field guide and kept the plugin metadata aligned with WordPress 7.0/PHP 7.4 support.

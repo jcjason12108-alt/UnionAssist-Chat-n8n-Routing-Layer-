@@ -2,7 +2,7 @@
 /*
 Plugin Name: n8n ChatAgent for Unions
 Description: Branded AI chat widget for labor unions featuring webhook integrations and multi-agent support.
-Version: 1.0.17
+Version: 1.0.18
 Author: Jason Cox
 Plugin URI: https://github.com/jcjason12108-alt/UnionAssist-Chat-n8n-Routing-Layer-
 Text Domain: n8n-chatagent-for-unions
@@ -44,7 +44,7 @@ if (file_exists(__DIR__ . '/plugin-update-checker/plugin-update-checker.php')) {
     }
 }
 
-define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.17');
+define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.18');
 define('N8N_UNION_AI_LIVE_CHAT_DIR', plugin_dir_path(__FILE__));
 define('N8N_UNION_AI_LIVE_CHAT_URL', plugin_dir_url(__FILE__));
 define('N8N_UNION_CHAT_ATTACHMENT_PROMPT_TOKEN', '[ATTACHMENT_READY]');
@@ -880,7 +880,7 @@ function n8n_union_chat_settings_page() {
             update_option('n8n_union_chat_route_prompt', $route_prompt !== '' ? $route_prompt : 'What can we help with?');
         }
         if (isset($_POST['n8n_union_chat_routes_text'])) {
-            update_option('n8n_union_chat_routes', n8n_union_chat_sanitize_routes($_POST['n8n_union_chat_routes_text']));
+            update_option('n8n_union_chat_routes', n8n_union_chat_sanitize_routes(wp_unslash($_POST['n8n_union_chat_routes_text'])));
         }
         $visibility_value = 'everyone';
         if (isset($_POST['n8n_union_chat_visibility'])) {
@@ -892,11 +892,11 @@ function n8n_union_chat_settings_page() {
         }
         update_option('n8n_union_chat_visibility', $visibility_value);
         $hidden_pages_value = isset($_POST['n8n_union_chat_hidden_pages'])
-            ? n8n_union_chat_sanitize_hidden_pages($_POST['n8n_union_chat_hidden_pages'])
+            ? n8n_union_chat_sanitize_hidden_pages(wp_unslash($_POST['n8n_union_chat_hidden_pages']))
             : '';
         update_option('n8n_union_chat_hidden_pages', $hidden_pages_value);
         $hidden_page_ids_value = isset($_POST['n8n_union_chat_hidden_page_ids'])
-            ? n8n_union_chat_sanitize_hidden_page_ids($_POST['n8n_union_chat_hidden_page_ids'])
+            ? n8n_union_chat_sanitize_hidden_page_ids(wp_unslash($_POST['n8n_union_chat_hidden_page_ids']))
             : [];
         update_option('n8n_union_chat_hidden_page_ids', $hidden_page_ids_value);
         if (isset($_POST['n8n_union_chat_header_title'])) {
@@ -1185,7 +1185,7 @@ function n8n_union_chat_settings_page() {
                 </div>
                 <div class="n8n_union-field">
                     <label for="n8n_union_chat_routes_text">Starter Questions</label>
-                    <textarea id="n8n_union_chat_routes_text" name="n8n_union_chat_routes_text" rows="5" class="large-text" placeholder="Website Help|website&#10;Contract Questions|contract_questions&#10;Carrier Policies|carrier_policies"><?php echo $routes_text; ?></textarea>
+                    <textarea id="n8n_union_chat_routes_text" name="n8n_union_chat_routes_text" rows="5" class="large-text" placeholder="Website Help|website&#10;Contract Questions|contract_questions&#10;Carrier Policies|carrier_policies"><?php echo esc_textarea($routes_text); ?></textarea>
                     <p class="description">Enter one starter per line as <code>Question text|route_key</code>. The question text is what visitors click and send. The route key is what n8n should use in Switch/IF nodes.</p>
                 </div>
                 <div class="n8n_union-field">
