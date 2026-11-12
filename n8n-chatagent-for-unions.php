@@ -2,7 +2,7 @@
 /*
 Plugin Name: n8n ChatAgent for Unions
 Description: Branded AI chat widget for labor unions featuring webhook integrations and multi-agent support.
-Version: 1.0.18
+Version: 1.0.19
 Author: Jason Cox
 Plugin URI: https://github.com/jcjason12108-alt/UnionAssist-Chat-n8n-Routing-Layer-
 Text Domain: n8n-chatagent-for-unions
@@ -44,7 +44,7 @@ if (file_exists(__DIR__ . '/plugin-update-checker/plugin-update-checker.php')) {
     }
 }
 
-define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.18');
+define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.19');
 define('N8N_UNION_AI_LIVE_CHAT_DIR', plugin_dir_path(__FILE__));
 define('N8N_UNION_AI_LIVE_CHAT_URL', plugin_dir_url(__FILE__));
 define('N8N_UNION_CHAT_ATTACHMENT_PROMPT_TOKEN', '[ATTACHMENT_READY]');
@@ -154,6 +154,7 @@ function n8n_union_chat_get_union_user_context() {
         'name' => $is_authenticated ? sanitize_text_field($user->display_name) : '',
         'email' => $is_authenticated ? sanitize_email($user->user_email) : '',
         'username' => $is_authenticated ? sanitize_text_field($user->user_login) : '',
+        'userId' => $is_authenticated ? (int) $user->ID : null,
         'token' => $is_authenticated ? n8n_union_chat_build_session_payload($user) : null,
         'local' => n8n_union_chat_get_local_identifier(),
     ];
@@ -1597,15 +1598,31 @@ function n8n_union_chat_proxy_message() {
         wp_send_json_error(['message' => $response->get_error_message()]);
     }
 
+    $status_code = wp_remote_retrieve_response_code($response);
+    if ($status_code < 200 || $status_code >= 300) {
+        wp_send_json_error(['message' => 'Chat service returned HTTP ' . (int) $status_code . '. Please try again.'], 502);
+    }
+
     $body = wp_remote_retrieve_body($response);
+    if (!is_string($body) || trim($body) === '') {
+        wp_send_json_error(['message' => 'The chat service returned an empty response. Start a new chat and try again.'], 502);
+    }
     $decoded = json_decode($body, true);
 
     if (!is_array($decoded)) {
         $decoded = [];
     }
 
+    if (!isset($decoded['reply']) && isset($decoded['content']) && is_string($decoded['content'])) {
+        $decoded['reply'] = $decoded['content'];
+    }
+
+    if (!isset($decoded['reply']) && isset($decoded[0]['content']) && is_string($decoded[0]['content'])) {
+        $decoded['reply'] = $decoded[0]['content'];
+    }
+
     if (!isset($decoded['reply'])) {
-        $decoded['reply'] = is_string($body) && $body !== '' ? $body : 'Hello! How can I help you today?';
+        $decoded['reply'] = $body;
     }
 
     wp_send_json_success($decoded);

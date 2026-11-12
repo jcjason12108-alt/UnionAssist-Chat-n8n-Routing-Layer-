@@ -63,7 +63,7 @@
     up: 'Your feedback is important. Thank you!',
     down: 'Your feedback is important to us. Your concern has been flagged and escalated.'
   };
-  const HISTORY_KEY = 'n8nUnionChatHistory';
+  const HISTORY_KEY_PREFIX = 'n8nUnionChatHistoryV2:';
   const SIZE_STORAGE_KEY = 'n8nUnionChatSize';
   const MAX_HISTORY_ENTRIES = 200;
   const MAX_ATTACHMENTS = N8nUnionChat.max_attachments || 3;
@@ -129,10 +129,40 @@
       localStorage.removeItem('n8nUnionChatHistory');
       localStorage.removeItem('n8nUnionVisitorId');
     } catch (err) {}
+  } else {
+    // The previous cache belonged to the old visitorId-backed n8n memory session.
+    try { localStorage.removeItem('n8nUnionChatHistory'); } catch (err) {}
   }
 
   const visitorId = N8nUnionChat.visitor_id || ('visitor_' + Math.random().toString(36).substr(2, 9));
   const visitorToken = N8nUnionChat.visitor_token || '';
+  const userIdentity = (N8nUnionChat.union_user && N8nUnionChat.union_user.username) || 'guest';
+  const sessionStorageKey = 'n8nUnionChatSessionV2:' + visitorId + ':' + userIdentity;
+
+  function newChatSessionId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return 'visitor_' + window.crypto.randomUUID();
+    }
+    return 'visitor_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+  }
+
+  function loadChatSessionId() {
+    try {
+      const saved = localStorage.getItem(sessionStorageKey);
+      if (saved && saved.startsWith('visitor_')) return saved;
+    } catch (err) {}
+    const created = newChatSessionId();
+    try { localStorage.setItem(sessionStorageKey, created); } catch (err) {}
+    return created;
+  }
+
+  let chatSessionId = loadChatSessionId();
+  const historyStorageKey = () => HISTORY_KEY_PREFIX + chatSessionId;
+
+  function startNewChatSession() {
+    chatSessionId = newChatSessionId();
+    try { localStorage.setItem(sessionStorageKey, chatSessionId); } catch (err) {}
+  }
   
   // Session start time for tracking
   const sessionStartTime = Math.floor(Date.now() / 1000);
@@ -143,7 +173,7 @@
   function loadChatHistory() {
     if (!window.localStorage) return [];
     try {
-      const raw = localStorage.getItem(HISTORY_KEY);
+      const raw = localStorage.getItem(historyStorageKey());
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
@@ -155,7 +185,7 @@
   function persistChatHistory() {
     if (!window.localStorage) return;
     try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(cachedHistory));
+      localStorage.setItem(historyStorageKey(), JSON.stringify(cachedHistory));
     } catch (err) {
       
     }
@@ -344,7 +374,7 @@
     historyRestored = false;
     if (!window.localStorage) return;
     try {
-      localStorage.removeItem(HISTORY_KEY);
+      localStorage.removeItem(historyStorageKey());
     } catch (err) {}
   }
 
@@ -409,7 +439,7 @@
   function createChatPayload(chatInput, extra = {}) {
     const payload = {
       action: extra.action || 'sendMessage',
-      sessionId: extra.sessionId || visitorId,
+      sessionId: extra.sessionId || chatSessionId,
       chatInput,
       visitorId,
       origin: 'wordpress',
@@ -2145,6 +2175,7 @@
     }
     clearAttachments();
     clearChatHistory();
+    startNewChatSession();
     
     // Reset chat header
     const chatHeader = document.querySelector('#n8n-union-chat-header .header-title');
