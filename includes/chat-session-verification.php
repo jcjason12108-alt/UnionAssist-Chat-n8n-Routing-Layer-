@@ -52,7 +52,33 @@ add_action('rest_api_init', 'n8n_union_chat_register_verification_route');
  */
 function n8n_union_chat_verify_message($request) {
     $input = $request->get_json_params();
-    $client_user = is_array($input) && isset($input['metadata']['unionUser']) && is_array($input['metadata']['unionUser'])
+    if (!is_array($input)) {
+        return new WP_Error('n8n_union_chat_invalid_message', 'Invalid chat message.', ['status' => 400]);
+    }
+    if (!isset($input['metadata']) || !is_array($input['metadata'])) {
+        $metadata_json = $input['metadata_json'] ?? null;
+        $parsed_metadata = null;
+        if (is_array($metadata_json)) {
+            $numeric_keys = count($metadata_json) > 0;
+            foreach ($metadata_json as $key => $value) {
+                if (!is_numeric($key) || !is_scalar($value)) {
+                    $numeric_keys = false;
+                    break;
+                }
+            }
+            if ($numeric_keys) {
+                ksort($metadata_json, SORT_NUMERIC);
+                $metadata_json = implode('', array_values($metadata_json));
+            } else {
+                $parsed_metadata = $metadata_json;
+            }
+        }
+        if (is_string($metadata_json)) {
+            $parsed_metadata = json_decode($metadata_json, true);
+        }
+        $input['metadata'] = is_array($parsed_metadata) ? $parsed_metadata : [];
+    }
+    $client_user = isset($input['metadata']['unionUser']) && is_array($input['metadata']['unionUser'])
         ? $input['metadata']['unionUser']
         : [];
     $token = $client_user['token'] ?? null;

@@ -48,6 +48,12 @@ check($result['metadata']['unionUser']['userId'] === 7 && $result['metadata']['u
 check($result['metadata']['unionUser']['token'] === null && !isset($result['metadata_json']), 'token and alternate metadata are not forwarded');
 check($result['metadata']['selectedRoute']['value'] === 'general', 'route context survives verification');
 
+$json_only = $forged;
+unset($json_only['metadata']);
+$json_only['metadata_json'] = json_encode(['unionUser' => ['authenticated' => true, 'role' => 'Admin', 'userId' => 999, 'token' => $valid]]);
+$result = n8n_union_chat_verify_message(new TestChatRequest($json_only));
+check(is_array($result) && $result['metadata']['unionUser']['userId'] === 7, 'metadata_json input is verified and replaced');
+
 $forged['metadata']['unionUser']['token'] = token_for(7, $now - 700, $now - 100);
 check(n8n_union_chat_verify_message(new TestChatRequest($forged)) instanceof WP_Error, 'expired token is rejected');
 $forged['metadata']['unionUser']['token'] = substr($valid, 0, -2) . 'xx';
