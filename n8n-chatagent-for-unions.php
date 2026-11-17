@@ -2,12 +2,12 @@
 /*
 Plugin Name: n8n ChatAgent for Unions
 Description: Branded AI chat widget for labor unions featuring webhook integrations and multi-agent support.
-Version: 1.0.19
+Version: 1.0.20
 Author: Jason Cox
 Plugin URI: https://github.com/jcjason12108-alt/UnionAssist-Chat-n8n-Routing-Layer-
 Text Domain: n8n-chatagent-for-unions
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 License: GPL v2 or later
 */
@@ -44,8 +44,10 @@ if (file_exists(__DIR__ . '/plugin-update-checker/plugin-update-checker.php')) {
     }
 }
 
-define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.19');
+define('N8N_UNION_AI_LIVE_CHAT_VERSION', '1.0.20');
 define('N8N_UNION_AI_LIVE_CHAT_DIR', plugin_dir_path(__FILE__));
+require_once __DIR__ . '/includes/chat-proxy-payload.php';
+require_once __DIR__ . '/includes/chat-session-verification.php';
 define('N8N_UNION_AI_LIVE_CHAT_URL', plugin_dir_url(__FILE__));
 define('N8N_UNION_CHAT_ATTACHMENT_PROMPT_TOKEN', '[ATTACHMENT_READY]');
 
@@ -143,8 +145,10 @@ function n8n_union_chat_build_session_payload($user = null) {
 /**
  * Frontend-friendly context describing the visitor (auth status, name, union token).
  */
-function n8n_union_chat_get_union_user_context() {
-    $user = wp_get_current_user();
+function n8n_union_chat_get_union_user_context($user = null) {
+    if ($user === null) {
+        $user = wp_get_current_user();
+    }
     $is_authenticated = ($user && $user->ID);
     $roles = $is_authenticated ? array_map('sanitize_text_field', (array) $user->roles) : [];
 
@@ -1513,16 +1517,20 @@ function n8n_union_chat_proxy_message() {
         wp_send_json_error(['message' => 'Invalid chat payload.']);
     }
 
-    $visitor_id = '';
-    if (!empty($payload['visitorId'])) {
-        $visitor_id = sanitize_text_field($payload['visitorId']);
-    } elseif (!empty($payload['sessionId'])) {
-        $visitor_id = sanitize_text_field($payload['sessionId']);
+    $visitor_id = !empty($payload['visitorId']) && is_scalar($payload['visitorId'])
+        ? sanitize_text_field((string) $payload['visitorId'])
+        : '';
+    if ($visitor_id === '') {
+        wp_send_json_error(['message' => 'Missing visitor session.'], 403);
     }
+    n8n_union_chat_require_visitor_token($visitor_id);
 
-    if ($visitor_id !== '') {
-        n8n_union_chat_require_visitor_token($visitor_id);
-    }
+    $payload = n8n_union_chat_build_trusted_proxy_payload(
+        $payload,
+        n8n_union_chat_get_union_user_context(),
+        n8n_union_chat_build_default_visitor_meta()
+    );
+    $payload['visitorId'] = $visitor_id;
 
     if (!isset($payload['chatInput']) && isset($payload['chatinput'])) {
         $payload['chatInput'] = $payload['chatinput'];
@@ -1536,18 +1544,6 @@ function n8n_union_chat_proxy_message() {
 
     if (empty($payload['sessionId']) && !empty($payload['visitorId'])) {
         $payload['sessionId'] = $payload['visitorId'];
-    }
-
-    if (empty($payload['metadata']) || !is_array($payload['metadata'])) {
-        $payload['metadata'] = [];
-    }
-
-    if (empty($payload['metadata']['unionUser'])) {
-        $payload['metadata']['unionUser'] = n8n_union_chat_get_union_user_context();
-    }
-
-    if (empty($payload['metadata']['visitorMeta'])) {
-        $payload['metadata']['visitorMeta'] = n8n_union_chat_build_default_visitor_meta();
     }
 
     $allowed_routes = [];
@@ -1564,10 +1560,6 @@ function n8n_union_chat_proxy_message() {
         'value' => $payload['route'],
         'label' => $payload['routeLabel'],
     ];
-
-    if (empty($payload['visitorMeta'])) {
-        $payload['visitorMeta'] = $payload['metadata']['visitorMeta'];
-    }
 
     $attachments_allowed = true;
 

@@ -12,9 +12,9 @@
 | **Contributors** | Jason Cox |
 | **Tags** | chat, ai, live-chat, customer-support, webhook |
 | **Requires WordPress** | 5.0+ |
-| **Tested up to** | 7.0 |
+| **Tested up to** | 7.1 |
 | **Requires PHP** | 7.4 |
-| **Stable Tag** | 1.0.19 |
+| **Stable Tag** | 1.0.20 |
 | **License** | GPLv2 or later |
 | **License URI** | https://www.gnu.org/licenses/gpl-2.0.html |
 
@@ -177,11 +177,12 @@ Access via **wp-admin → n8n ChatAgent for Unions**
 
 ## 🔍 Security & Privacy Notes
 
-- Messages relay through a WordPress AJAX proxy to your webhook
+- Messages relay through a WordPress AJAX proxy to your webhook. The proxy replaces browser identity fields with the current WordPress account.
 - Optional IP lookup uses `http://ip-api.com`
-- No credentials stored in WordPress
+- No webhook credentials are sent to the browser
 - Transcript persistence is **browser-local only**
-- All endpoints protected by WordPress nonces/cap checks
+- Public chat requests require a WordPress nonce and a visitor token; those are not proof of account identity
+- Connect the n8n Chat Trigger to a request that posts each message to `/wp-json/n8n-union-chat/v1/verify-message` before any other node runs. This route validates the short-lived WordPress token and replaces the claimed identity with the current account. A direct n8n webhook call without a valid token then fails before reaching chat tools.
 - JS guarded against missing DOM nodes
 
 ---
@@ -221,6 +222,11 @@ Advise members accordingly and note this in your privacy policy.
 ---
 
 ## 📝 Changelog
+
+### 1.0.20
+- Replace browser-supplied user identity with WordPress-verified identity before forwarding chat messages.
+- Require a visitor session token and remove alternate identity fields from proxied payloads.
+- Add a WordPress token-verification route for the n8n workflow to call before using member identity or tools.
 
 ### 1.0.19
 - Keep a saved n8n conversation ID across page loads and rotate it when starting a new chat, matching the mobile clients' session handling without changing the WordPress visitor token.

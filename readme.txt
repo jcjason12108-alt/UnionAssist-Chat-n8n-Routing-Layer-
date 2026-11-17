@@ -2,9 +2,9 @@
 Contributors: Jason Cox
 Tags: chat, ai, live-chat, customer-support, webhook
 Requires at least: 5.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.19
+Stable tag: 1.0.20
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -107,6 +107,10 @@ The plugin passes WordPress user context (role, name, email, token) to your webh
 For continuity the widget stores the transcript in the browser’s localStorage until the user logs out or clicks “Start New Chat”. Remind members not to leave sensitive chats open on shared devices, and note this behavior in your privacy policy if needed.
 
 == Changelog ==
+
+= 1.0.20 =
+* Replace browser-supplied chat identity with the current WordPress user and require a visitor session token for proxied messages.
+* Remove extra identity fields before forwarding to n8n and add a signed-token verification route for the workflow.
 
 = 1.0.19 =
 * Keep a saved n8n conversation ID across page loads and rotate it when starting a new chat, while retaining the WordPress visitor token.
